@@ -3,15 +3,24 @@ import bcrypt from 'bcryptjs';
 
 const { Pool } = pg;
 
+const poolConfig = process.env.DATABASE_URL
+  ? {
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.DATABASE_SSL === 'false' ? false : { rejectUnauthorized: false },
+    }
+  : {
+      host: process.env.PGHOST || '127.0.0.1',
+      port: parseInt(process.env.PGPORT || '5433', 10),
+      user: process.env.PGUSER || 'postgres',
+      password: process.env.PGPASSWORD || undefined,
+      database: process.env.PGDATABASE || 'carebridge',
+    };
+
 export const pool = new Pool({
-  host: process.env.PGHOST || '127.0.0.1',
-  port: parseInt(process.env.PGPORT || '5433', 10),
-  user: process.env.PGUSER || 'postgres',
-  password: process.env.PGPASSWORD || undefined,
-  database: process.env.PGDATABASE || 'carebridge',
+  ...poolConfig,
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
+  connectionTimeoutMillis: 10000,
 });
 
 export async function query(text, params) {

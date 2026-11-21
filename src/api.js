@@ -1,6 +1,7 @@
 // CareBridge API Client & WebSocket Service
 
-const API_BASE = '/api';
+const rawApiUrl = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+const API_BASE = rawApiUrl ? (rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`) : '/api';
 
 class ApiService {
   constructor() {
@@ -213,8 +214,22 @@ class RealtimeService {
       return;
     }
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    let wsUrl = import.meta.env.VITE_WS_URL;
+    if (!wsUrl) {
+      if (rawApiUrl && rawApiUrl.startsWith('http')) {
+        try {
+          const urlObj = new URL(rawApiUrl);
+          const wsProtocol = urlObj.protocol === 'https:' ? 'wss:' : 'ws:';
+          wsUrl = `${wsProtocol}//${urlObj.host}/ws`;
+        } catch (e) {
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          wsUrl = `${protocol}//${window.location.host}/ws`;
+        }
+      } else {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsUrl = `${protocol}//${window.location.host}/ws`;
+      }
+    }
 
     try {
       this.ws = new WebSocket(wsUrl);

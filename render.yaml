@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: carebridge
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: carebridge-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+
+databases:
+  - name: carebridge-db
+    plan: free
+    databaseName: carebridge
+    user: postgres
