@@ -333,29 +333,16 @@ function App() {
     }
   }, []);
 
-  // Check existing session on boot
+  // Always present the Login Gateway on initial load / fresh visit
   useEffect(() => {
-    const token = api.getToken();
-    if (token) {
-      api.getMe()
-        .then((res) => {
-          if (res?.user) {
-            setCurrentUser(res.user);
-            setIsAuthenticated(true);
-            if (res.user.hospitalId) {
-              setSelected(res.user.hospitalId);
-            }
-          }
-        })
-        .catch(() => {
-          api.logout();
-          setIsAuthenticated(false);
-        })
-        .finally(() => {
-          loadData();
-        });
-    }
-  }, [loadData]);
+    try {
+      localStorage.removeItem('carebridge_token');
+      sessionStorage.removeItem('carebridge_token');
+    } catch (e) {}
+    api.logout();
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+  }, []);
 
   // Load audit logs and users when tabs active
   useEffect(() => {

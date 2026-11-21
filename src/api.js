@@ -5,20 +5,23 @@ const API_BASE = rawApiUrl ? (rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApi
 
 class ApiService {
   constructor() {
-    this.token = localStorage.getItem('carebridge_token') || null;
+    this.token = null;
   }
 
   setToken(token) {
     this.token = token;
     if (token) {
-      localStorage.setItem('carebridge_token', token);
+      sessionStorage.setItem('carebridge_token', token);
     } else {
-      localStorage.removeItem('carebridge_token');
+      sessionStorage.removeItem('carebridge_token');
+      try {
+        localStorage.removeItem('carebridge_token');
+      } catch (e) {}
     }
   }
 
   getToken() {
-    return this.token || localStorage.getItem('carebridge_token');
+    return this.token || sessionStorage.getItem('carebridge_token');
   }
 
   async request(endpoint, options = {}) {
