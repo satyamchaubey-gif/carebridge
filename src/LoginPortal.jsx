@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   HeartPulse, Hospital, Shield, Ambulance, ShieldCheck,
-  Lock, Mail, ArrowRight, CheckCircle2, AlertCircle, KeyRound, Siren, PhoneCall, Building2, Globe
+  Lock, ArrowRight, CheckCircle2, AlertCircle, KeyRound, Siren, Building2, Sparkles, Loader2
 } from 'lucide-react';
 import { api } from './api.js';
 import PublicSosModal from './PublicSosModal.jsx';
@@ -12,6 +12,7 @@ export default function LoginPortal({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [activeItem, setActiveItem] = useState(null);
   const [error, setError] = useState('');
 
   const hospitalsList = [
@@ -20,7 +21,6 @@ export default function LoginPortal({ onLoginSuccess }) {
       name: 'Aurelia Medical Institute',
       area: 'Sector 62, Noida',
       lead: 'Marcus Vance',
-      designation: 'Trauma & Emergency Reception Desk',
       beds: '11 Beds Ready',
     },
     {
@@ -28,7 +28,6 @@ export default function LoginPortal({ onLoginSuccess }) {
       name: 'Crescent Multispeciality',
       area: 'Sector 50, Noida',
       lead: 'Dr. Ananya Roy',
-      designation: 'Emergency Care Administrator',
       beds: '7 Beds Ready',
     },
     {
@@ -36,15 +35,13 @@ export default function LoginPortal({ onLoginSuccess }) {
       name: 'St. Raphael Hospital',
       area: 'Indirapuram, Ghaziabad',
       lead: 'Dr. David Kurian',
-      designation: 'Cardiac Wing Coordinator',
       beds: '18 Beds Ready',
     },
     {
       id: 'H-101',
-      name: 'Apex Metropolitan Trauma',
+      name: 'Apex Trauma Center',
       area: 'Greater Noida West',
       lead: 'Dr. Vikram Singhania',
-      designation: 'ICU Critical Care Director',
       beds: '24 Beds Ready',
     },
     {
@@ -52,15 +49,13 @@ export default function LoginPortal({ onLoginSuccess }) {
       name: 'Northgate Care Centre',
       area: 'Sector 18, Noida',
       lead: 'Sister Rachel Green',
-      designation: 'Triage Supervisor',
-      beds: 'Capacity Sync',
+      beds: 'Sync Ready',
     },
     {
       id: 'H-005',
       name: 'Veda Institute of Health',
       area: 'Sector 137, Noida',
       lead: 'Dr. Kabir Seth',
-      designation: 'Emergency Medicine Specialist',
       beds: '9 Beds Ready',
     },
   ];
@@ -70,26 +65,27 @@ export default function LoginPortal({ onLoginSuccess }) {
       role: 'coordinator',
       title: 'Dr. Sarah Chen',
       subtitle: 'System Coordinator & Regional Dispatcher',
-      desc: 'Full regional command authority, multi-facility routing, and protocol override.',
+      desc: 'Central command authority, regional triage matching & hospital routing.',
       icon: Shield,
     },
     {
       role: 'paramedic',
       title: 'Alex Rivera (EMT-P)',
       subtitle: 'Mobile Paramedic Unit 7',
-      desc: 'Field emergency case intake, GPS proximity routing, and ambulance transfer requests.',
+      desc: 'On-scene emergency intake, patient transit telemetry & ambulance dispatch.',
       icon: Ambulance,
     },
     {
       role: 'auditor',
       title: 'Elena Rostova',
       subtitle: 'Clinical Compliance Auditor',
-      desc: 'Immutable audit trail inspection, compliance scoring, and regional capacity analytics.',
+      desc: 'Immutable audit log inspection, clinical score verification & compliance analytics.',
       icon: ShieldCheck,
     },
   ];
 
   const handleHospitalLogin = async (hospId) => {
+    setActiveItem(hospId);
     setLoading(true);
     setError('');
     try {
@@ -98,13 +94,15 @@ export default function LoginPortal({ onLoginSuccess }) {
         onLoginSuccess(res.user);
       }
     } catch (err) {
-      setError(err.message || 'Hospital login failed');
+      setError(err.message || 'Hospital login failed. Please try again.');
     } finally {
       setLoading(false);
+      setActiveItem(null);
     }
   };
 
   const handleRoleLogin = async (role) => {
+    setActiveItem(role);
     setLoading(true);
     setError('');
     try {
@@ -113,14 +111,15 @@ export default function LoginPortal({ onLoginSuccess }) {
         onLoginSuccess(res.user);
       }
     } catch (err) {
-      setError(err.message || 'Persona authentication failed');
+      setError(err.message || 'Persona login failed. Please try again.');
     } finally {
       setLoading(false);
+      setActiveItem(null);
     }
   };
 
   const handleCredentialsSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setLoading(true);
     setError('');
     try {
@@ -135,136 +134,146 @@ export default function LoginPortal({ onLoginSuccess }) {
     }
   };
 
+  const fillQuickCredentials = (roleEmail) => {
+    setEmail(roleEmail);
+    setPassword('CareBridge2026!');
+  };
+
   return (
     <div className="login-portal">
-      {/* Top Urgent Emergency Callout (No Login Needed) */}
-      <div style={{ position: 'absolute', top: '18px', width: 'min(920px, 94%)', zIndex: 30, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(225, 29, 72, 0.12)', border: '1px solid rgba(225, 29, 72, 0.4)', borderRadius: '12px', padding: '10px 18px', backdropFilter: 'blur(10px)', boxShadow: '0 0 25px rgba(225, 29, 72, 0.2)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span className="live-dot" style={{ background: 'var(--accent-crimson)', boxShadow: '0 0 10px var(--accent-crimson)' }}></span>
-          <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>
-            CRITICAL EMERGENCY? NO LOGIN REQUIRED.
-          </span>
-          <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }} className="hide-mobile">
-            Instant GPS ambulance tracking & trauma prep.
-          </span>
+      <div className="login-container">
+        {/* Urgent Emergency Callout - Positioned Cleanly in Document Flow */}
+        <div className="login-sos-banner">
+          <div className="sos-banner-left">
+            <span className="live-dot pulse-red"></span>
+            <div>
+              <div className="sos-title">CRITICAL EMERGENCY? NO LOGIN REQUIRED</div>
+              <div className="sos-subtitle">Instant GPS location pin & emergency ambulance dispatch</div>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowSosModal(true)}
+            className="btn btn-primary sos-button"
+          >
+            <Siren size={15} /> CALL SOS AMBULANCE
+          </button>
         </div>
-        <button
-          onClick={() => setShowSosModal(true)}
-          className="btn btn-primary"
-          style={{ height: '34px', fontSize: '11px', padding: '0 14px', background: 'linear-gradient(135deg, #ef4444, #b91c1c)', boxShadow: '0 0 15px rgba(239, 68, 68, 0.5)' }}
-        >
-          <Siren size={14} /> 🚨 CALL AMBULANCE NOW
-        </button>
-      </div>
 
-      <div className="login-container" style={{ marginTop: '54px' }}>
-        {/* Authoritative National Portal Header (PM Vidyalaxmi Style) */}
+        {/* Portal Branding */}
         <div className="login-header">
           <div className="login-brand-mark">
-            <HeartPulse size={28} />
-          </div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(6, 182, 212, 0.1)', border: '1px solid rgba(6, 182, 212, 0.3)', padding: '3px 10px', borderRadius: '16px', fontSize: '10px', color: 'var(--accent-cyan)', fontFamily: 'var(--font-mono)' }}>
-            <Globe size={11} /> NATIONAL CAPITAL REGION HEALTHCARE COORDINATION AUTHORITY
+            <HeartPulse size={26} />
           </div>
           <h1 className="login-title">
-            CareBridge<span>.</span> Integrated Health Gateway
+            CareBridge<span>.</span>
           </h1>
           <p className="login-subtitle">
-            Single unified access window for hospital admission desks, regional emergency dispatchers, and mobile ambulance units across NCR.
+            Regional Emergency Healthcare Command Gateway
           </p>
         </div>
 
-        {/* Clean Portal Card */}
+        {/* Clean Login Card */}
         <div className="login-card">
           {/* Navigation Tabs */}
           <div className="login-tabs">
             <button
               className={`login-tab-btn ${tab === 'hospitals' ? 'active' : ''}`}
               onClick={() => { setTab('hospitals'); setError(''); }}
+              type="button"
             >
-              <Hospital size={15} /> 1. Hospital Facility Desks
+              <Hospital size={14} /> Hospital Desks
             </button>
             <button
               className={`login-tab-btn ${tab === 'roles' ? 'active' : ''}`}
               onClick={() => { setTab('roles'); setError(''); }}
+              type="button"
             >
-              <Shield size={15} /> 2. Command & Field Units
+              <Shield size={14} /> Command Units
             </button>
             <button
               className={`login-tab-btn ${tab === 'credentials' ? 'active' : ''}`}
               onClick={() => { setTab('credentials'); setError(''); }}
+              type="button"
             >
-              <KeyRound size={15} /> 3. Credentials Sign In
+              <KeyRound size={14} /> Sign In
             </button>
           </div>
 
           {error && (
-            <div style={{ background: 'rgba(225, 29, 72, 0.15)', border: '1px solid rgba(225, 29, 72, 0.4)', padding: '10px 14px', borderRadius: '8px', color: '#ff859d', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <AlertCircle size={16} /> {error}
+            <div className="login-error-box">
+              <AlertCircle size={15} /> <span>{error}</span>
             </div>
           )}
 
           {/* TAB 1: Hospital Facilities */}
           {tab === 'hospitals' && (
             <div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
-                <span>SELECT YOUR MEDICAL FACILITY TO ENTER SCENE-FOCUSED DESK:</span>
-                <span style={{ color: 'var(--accent-emerald)' }}>● ALL 7 NODES ONLINE</span>
+              <div className="tab-instruction">
+                Select your assigned facility desk to enter:
               </div>
               <div className="facility-login-grid">
-                {hospitalsList.map((h) => (
-                  <button
-                    key={h.id}
-                    className="facility-login-card"
-                    disabled={loading}
-                    onClick={() => handleHospitalLogin(h.id)}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <span className="mono" style={{ color: 'var(--accent-crimson)', fontWeight: 600 }}>{h.id}</span>
-                      <span className="facility-login-badge">
-                        <CheckCircle2 size={11} /> {h.beds}
-                      </span>
-                    </div>
-                    <b>{h.name}</b>
-                    <span>{h.area}</span>
-                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '4px', borderTop: '1px solid var(--border-subtle)', paddingTop: '6px' }}>
-                      <b>Desk Lead:</b> {h.lead}
-                    </div>
-                  </button>
-                ))}
+                {hospitalsList.map((h) => {
+                  const isCurrent = loading && activeItem === h.id;
+                  return (
+                    <button
+                      key={h.id}
+                      className="facility-login-card"
+                      disabled={loading}
+                      onClick={() => handleHospitalLogin(h.id)}
+                      type="button"
+                    >
+                      <div className="facility-card-top">
+                        <span className="facility-id">{h.id}</span>
+                        <span className="facility-login-badge">
+                          <CheckCircle2 size={11} /> {h.beds}
+                        </span>
+                      </div>
+                      <div className="facility-name">{h.name}</div>
+                      <div className="facility-meta">
+                        <span>{h.area}</span>
+                        <span>•</span>
+                        <span>Lead: {h.lead}</span>
+                      </div>
+                      {isCurrent && (
+                        <div className="card-loading-overlay">
+                          <Loader2 size={16} className="spin-icon" /> Connecting...
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* TAB 2: Regional Command Roles */}
           {tab === 'roles' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginBottom: '4px' }}>
-                AUTHENTICATE AS CENTRAL DISPATCH OR MOBILE FIELD AMBULANCE:
+            <div className="roles-login-list">
+              <div className="tab-instruction">
+                Choose your command persona:
               </div>
               {rolesList.map((r) => {
                 const Icon = r.icon;
+                const isCurrent = loading && activeItem === r.role;
                 return (
                   <button
                     key={r.role}
-                    className="facility-login-card"
-                    style={{ padding: '16px 20px', flexDirection: 'row', alignItems: 'center', gap: '16px' }}
+                    className="role-login-card"
                     disabled={loading}
                     onClick={() => handleRoleLogin(r.role)}
+                    type="button"
                   >
-                    <div className="metric-icon" style={{ height: '44px', width: '44px', borderRadius: '10px' }}>
-                      <Icon size={22} />
+                    <div className="role-icon-box">
+                      <Icon size={20} />
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <b style={{ fontSize: '15px' }}>{r.title}</b>
-                      <span style={{ display: 'block', color: 'var(--accent-cyan)', fontWeight: 600, fontSize: '12px' }}>
-                        {r.subtitle}
-                      </span>
-                      <small style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
-                        {r.desc}
-                      </small>
+                    <div className="role-text-box">
+                      <div className="role-title">{r.title}</div>
+                      <div className="role-subtitle">{r.subtitle}</div>
+                      <div className="role-desc">{r.desc}</div>
                     </div>
-                    <ArrowRight size={18} style={{ color: 'var(--accent-crimson)' }} />
+                    <div className="role-arrow">
+                      {isCurrent ? <Loader2 size={16} className="spin-icon" /> : <ArrowRight size={16} />}
+                    </div>
                   </button>
                 );
               })}
@@ -273,72 +282,74 @@ export default function LoginPortal({ onLoginSuccess }) {
 
           {/* TAB 3: Credentials Login */}
           {tab === 'credentials' && (
-            <form onSubmit={handleCredentialsSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                <span>Official Healthcare Email</span>
+            <form onSubmit={handleCredentialsSubmit} className="credentials-form">
+              <div className="input-field-group">
+                <label>Official Email</label>
                 <input
                   type="email"
                   required
                   placeholder="e.g. coordinator@carebridge.health"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  style={{
-                    height: '44px',
-                    borderRadius: '8px',
-                    background: 'rgba(0, 0, 0, 0.4)',
-                    border: '1px solid var(--border-medium)',
-                    padding: '0 14px',
-                    color: '#fff',
-                    fontSize: '13px',
-                  }}
                 />
-              </label>
+              </div>
 
-              <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                <span>Master Access Key / Password</span>
+              <div className="input-field-group">
+                <label>Access Password</label>
                 <input
                   type="password"
                   required
-                  placeholder="Enter your security token or password"
+                  placeholder="Enter password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  style={{
-                    height: '44px',
-                    borderRadius: '8px',
-                    background: 'rgba(0, 0, 0, 0.4)',
-                    border: '1px solid var(--border-medium)',
-                    padding: '0 14px',
-                    color: '#fff',
-                    fontSize: '13px',
-                  }}
                 />
-              </label>
+              </div>
 
-              <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '10px 14px', borderRadius: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
-                <b>Pre-Configured Operator Accounts:</b> Password is <code>CareBridge2026!</code> for accounts <code>coordinator@carebridge.health</code> or <code>staff@aurelia.health</code>
+              {/* Fast 1-Click Test Login Pills */}
+              <div className="quick-fill-section">
+                <span className="quick-fill-label">Quick autofill:</span>
+                <button
+                  type="button"
+                  className="quick-fill-pill"
+                  onClick={() => fillQuickCredentials('coordinator@carebridge.health')}
+                >
+                  Coordinator
+                </button>
+                <button
+                  type="button"
+                  className="quick-fill-pill"
+                  onClick={() => fillQuickCredentials('staff@aurelia.health')}
+                >
+                  Hospital Staff
+                </button>
               </div>
 
               <button
                 type="submit"
-                className="btn btn-primary"
+                className="btn btn-primary submit-btn"
                 disabled={loading}
-                style={{ height: '44px', fontSize: '13px' }}
               >
-                {loading ? 'Authenticating...' : 'Sign In to Designated Desk'} <ArrowRight size={15} />
+                {loading ? (
+                  <>
+                    <Loader2 size={15} className="spin-icon" /> Authenticating...
+                  </>
+                ) : (
+                  <>
+                    Sign In to Portal <ArrowRight size={15} />
+                  </>
+                )}
               </button>
             </form>
           )}
         </div>
 
-        {/* Security Compliance Footer */}
-        <div className="login-security-footer">
-          <span><Lock size={12} /> 256-BIT ENCRYPTED MESH</span>
+        {/* Subtle, Clean Footer */}
+        <div className="login-clean-footer">
+          <span>PostgreSQL 18 Persistent</span>
           <span>•</span>
-          <span>POSTGRESQL 18 PERSISTENT</span>
+          <span>End-to-End Encrypted</span>
           <span>•</span>
-          <span>MAPTILER CLOUD GPS</span>
-          <span>•</span>
-          <span>NCR HEALTH PROTOCOL V2.5</span>
+          <span>CareBridge v1.0</span>
         </div>
       </div>
 
@@ -346,9 +357,7 @@ export default function LoginPortal({ onLoginSuccess }) {
       {showSosModal && (
         <PublicSosModal
           onClose={() => setShowSosModal(false)}
-          onDispatchSuccess={(data) => {
-            // Can stay on live tracking or close
-          }}
+          onDispatchSuccess={() => {}}
         />
       )}
     </div>
