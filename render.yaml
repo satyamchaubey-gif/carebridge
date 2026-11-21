@@ -19,4 +19,4 @@ databases:
   - name: carebridge-db
     plan: free
     databaseName: carebridge
-    user: postgres
+    user: carebridge_user
