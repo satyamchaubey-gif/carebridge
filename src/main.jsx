@@ -720,17 +720,6 @@ function App() {
         </nav>
 
         <div className="sidebar-bottom">
-          <div className="protocol-card">
-            <div className="protocol-icon">
-              <ShieldCheck size={16} />
-            </div>
-            <div>
-              <b>Mesh Status</b>
-              <small>Live WebSocket Stream</small>
-            </div>
-            <span className="status-pip"></span>
-          </div>
-
           {/* Profile & Logout Action */}
           <div className="profile" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -792,32 +781,6 @@ function App() {
             >
               <Siren size={14} /> 🚨 SOS AMBULANCE
             </button>
-
-            {/* Data Environment Isolation Selector */}
-            <div className="env-selector" title="Isolate Fictional Demo Data from Real Records">
-              <button
-                className={`env-pill ${dataMode === 'all' ? 'active' : ''}`}
-                onClick={() => setDataMode('all')}
-              >
-                All
-              </button>
-              <button
-                className={`env-pill ${dataMode === 'live' ? 'active' : ''}`}
-                onClick={() => setDataMode('live')}
-              >
-                Live
-              </button>
-              <button
-                className={`env-pill ${dataMode === 'demo' ? 'active' : ''}`}
-                onClick={() => setDataMode('demo')}
-              >
-                Demo
-              </button>
-            </div>
-
-            <div className="system-status hide-mobile">
-              <span className="live-dot"></span> OPERATIONAL
-            </div>
 
             <button
               className="btn btn-quiet"
